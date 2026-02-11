@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BioEthos: Análise de Laudos - Versão Moderna</title>
+  <style>
+    /* ========== CSS VARIABLES ========== */
+    :root {
+      --primary: #00695c;
+      --primary-light: #4db6ac;
+      --primary-dark: #004d40;
+      --bg: #f8fafc;
+      --paper: #ffffff;
+      --text: #1e293b;
+      --text-light: #64748b;
+      --accent: #d84315;
+      --success: #16a34a;
+      --error: #dc2626;
+      --border: #e2e8f0;
+      --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --radius: 12px;
+      --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========== RESET & BASE ========== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #e0f2f1 100%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ========== HEADER ========== */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 1.5rem 0;
+      box-shadow: var(--shadow-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    header h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    header p {
+      opacity: 0.95;
+      font-size: 0.95rem;
+    }
+
+    /* ========== CONTAINER ========== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* ========== TABS ========== */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+    }
+
+    .tab-btn {
+      background: white;
+      border: 2px solid var(--border);
+      padding: 0.75rem 1.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-light);
+      transition: var(--transition);
+      white-space: nowrap;
+      font-size: 0.9rem;
+    }
+
+    .tab-btn:hover {
+      border-color: var(--primary-light);
+      background: #e0f2f1;
+      transform: translateY(-2px);
+    }
+
+    .tab-btn.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 105, 92, 0.3);
+    }
+
+    /* ========== CASE HEADER ========== */
+    .case-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border-left: 4px solid var(--primary);
+    }
+
+    .case-title {
+      font-size: 1.75rem;
+      color: var(--primary);
+      margin-bottom: 0.5rem;
+      font-weight: 700;
+    }
+
+    .case-history {
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      line-height: 1.7;
+    }
+
+    .case-objective {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .case-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .badge {
+      background: var(--primary-light);
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+    }
+
+    .badge-system {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .progress-dots {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .progress-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      transition: var(--transition);
+      border: 2px solid var(--border);
+    }
+
+    .progress-dot.done {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 12px rgba(0, 105, 92, 0.5);
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+
+    /* ========== LAYOUT ========== */
+    .layout {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    @media (min-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr 1.2fr;
+        align-items: start;
+      }
+    }
+
+    /* ========== CARDS ========== */
+    .card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      border-top: 4px solid var(--primary);
+      transition: var(--transition);
+      animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card:hover {
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-step-badge {
+      background: var(--primary);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+      box-shadow: 0 4px 8px rgba(0, 105, 92, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .card-subtitle {
+      color: var(--text-light);
+      margin-bottom: 0.75rem;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .competence-tag {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      font-style: italic;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: #f8fafc;
+      border-radius: 6px;
+      border-left: 3px solid var(--primary-light);
+    }
+
+    /* ========== REPORT ========== */
+    .report-paper {
+      background: #fefefe;
+      border: 1px solid #cbd5e1;
+      border-left: 5px solid #1e293b;
+      padding: 1.25rem;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.9rem;
+      color: #1e293b;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin: 1rem 0;
+      border-radius: 6px;
+    }
+
+    .report-header {
+      border-bottom: 2px solid #1e293b;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+    }
+
+    .report-signature {
+      text-align: right;
+      margin-top: 1rem;
+      font-style: italic;
+      font-size: 0.8rem;
+      color: #64748b;
+    }
+
+    .report-gap {
+      font-weight: bold;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      color: var(--accent);
+      cursor: help;
+      transition: var(--transition);
+    }
+
+    .report-gap:hover {
+      background: #fef3c7;
+      padding: 0 2px;
+    }
+
+    /* ========== EXPERT NOTE ========== */
+    .expert-note {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .expert-note summary {
+      cursor: pointer;
+      padding: 0.75rem;
+      background: var(--primary-light);
+      color: white;
+      font-weight: 600;
+      user-select: none;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .expert-note summary:hover {
+      background: var(--primary);
+    }
+
+    .expert-note summary::before {
+      content: "▶";
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .expert-note[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .expert-note p {
+      padding: 1rem;
+      background: #e0f2f1;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    /* ========== FEATURE GRID ========== */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .feature-item {
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #f8fafc;
+      padding: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.9rem;
+    }
+
+    .feature-item:hover {
+      background: #e0f2f1;
+      border-color: var(--primary-light);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .feature-item.selected {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 105, 92, 0.2);
+    }
+
+    .feature-checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      border: 2px solid #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: white;
+      background: white;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .feature-item.selected .feature-checkbox {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .feature-item.selected .feature-checkbox::before {
+      content: "✓";
+      font-weight: bold;
+    }
+
+    /* ========== CHOICE OPTIONS ========== */
+    .choice-option {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: var(--transition);
+      background: white;
+      font-size: 0.9rem;
+    }
+
+    .choice-option:hover {
+      background: #f1f8e9;
+      border-color: var(--primary);
+      transform: translateX(4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .choice-option.selected {
+      background: linear-gradient(135deg, #e0f2f1 0%, #b2dfdb 100%);
+      border-color: var(--primary);
+      border-width: 3px;
+      box-shadow: 0 4px 12px rgba(0, 105, 92, 0.2);
+    }
+
+    /* ========== BUTTONS ========== */
+    .check-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      border: none;
+      padding: 0.875rem 2rem;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(0, 105, 92, 0.3);
+    }
+
+    .check-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 105, 92, 0.4);
+    }
+
+    .check-btn:active {
+      transform: translateY(0);
+    }
+
+    .check-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ========== FEEDBACK ========== */
+    .feedback-box {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 10px;
+      display: none;
+      font-size: 0.9rem;
+      border-left: 4px solid;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feedback-box.success {
+      background: #f0fdf4;
+      border-color: var(--success);
+      color: #166534;
+    }
+
+    .feedback-box.error {
+      background: #fef2f2;
+      border-color: var(--error);
+      color: #991b1b;
+    }
+
+    .feedback-box strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+    }
+
+    .feedback-list {
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+    }
+
+    .feedback-list li {
+      margin-bottom: 0.25rem;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 768px) {
+      .case-header {
+        grid-template-columns: 1fr;
+      }
+
+      .case-meta {
+        align-items: flex-start;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--primary-light);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-content">
+    <h1>🧬 BioEthos: Patologia Clínica</h1>
+    <p>Integração Básico-Clínica e Bioética • Versão Moderna 2026</p>
+  </div>
+</header>
+
+<div class="container">
+  <nav class="tabs" aria-label="Seleção de casos clínicos" id="tabs-nav">
+    <!-- Preenchido via JS -->
+  </nav>
+
+  <section class="case-header" aria-live="polite">
+    <div>
+      <h2 id="case-title" class="case-title">Carregando caso...</h2>
+      <p id="case-history" class="case-history"></p>
+      <p id="case-objective" class="case-objective"></p>
+    </div>
+    <div class="case-meta">
+      <span id="report-id-badge" class="badge"></span>
+      <span id="case-system" class="badge badge-system"></span>
+      <div class="progress-dots" aria-label="Progresso no caso">
+        <span id="dot-laudo" class="progress-dot" title="Interpretação do laudo"></span>
+        <span id="dot-cp" class="progress-dot" title="Correlação clínico-patológica"></span>
+        <span id="dot-bio" class="progress-dot" title="Deliberação bioética"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="layout">
+    <!-- Coluna Laudo -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <span class="card-step-badge">L</span>
+          <h3 class="card-title">Laudo histopatológico</h3>
+        </div>
+        <p class="card-subtitle">
+          Identifique os trechos sublinhados (lacunas) e complete-os selecionando os achados corretos na etapa 1.
+        </p>
+
+        <article class="report-paper">
+          <div class="report-header">
+            Laboratório de Anatomia Patológica - Laudo Nº <span id="report-id"></span>
+          </div>
+          <p><strong>Macroscopia:</strong> <span id="macro-desc"></span></p>
+          <p>
+            <strong>Microscopia:</strong>
+            <span id="micro-desc"></span>
+          </p>
+          <p class="report-signature">Dr. Patologista, CRM 12345</p>
+        </article>
+
+        <details class="expert-note" id="expert-note">
+          <summary>💡 Comentário do patologista</summary>
+          <p id="expert-text"></p>
+        </details>
+      </div>
+    </div>
+
+    <!-- Coluna Atividades -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+      <!-- Card 1: Interpretação -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-step-badge">1</span>
+          <h3 class="card-title">Interpretação do laudo</h3>
+        </div>
+        <p class="card-subtitle">
+          Selecione os achados histológicos que preenchem as lacunas do laudo.
+        </p>
+        <p class="competence-tag">
+          📚 Competências: raciocínio clínico-patológico, leitura crítica de laudos
+        </p>
+
+        <div id="feature-list" class="feature-grid"></div>
+
+        <button class="check-btn" id="btn-check-features" type="button">
+          ✓ Conferir achados
+        </button>
+        <div id="fb-features" class="feedback-box"></div>
+      </div>
+
+      <!-- Card 2: Correlação -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-step-badge">2</span>
+          <h3 class="card-title">Correlação clínico-patológica</h3>
+        </div>
+        <p class="card-subtitle">
+          Escolha o mecanismo patológico que melhor explica o quadro.
+        </p>
+        <p class="competence-tag">
+          🔬 Competências: integração básico-clínica, raciocínio fisiopatológico
+        </p>
+
+        <div id="diag-options"></div>
+
+        <button class="check-btn" id="btn-check-diag" type="button">
+          ✓ Conferir mecanismo
+        </button>
+        <div id="fb-diag" class="feedback-box"></div>
+      </div>
+
+      <!-- Card 3: Bioética -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-step-badge">3</span>
+          <h3 class="card-title">Deliberação bioética</h3>
+        </div>
+        <p class="card-subtitle" id="ethics-q"></p>
+        <p class="competence-tag">
+          ⚖️ Competências: atuação ética, comunicação, justiça em saúde
+        </p>
+
+        <div id="ethics-options"></div>
+
+        <button class="check-btn" id="btn-check-ethics" type="button">
+          ✓ Conferir conduta
+        </button>
+        <div id="fb-ethics" class="feedback-box"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  // ========== DADOS DOS CASOS ==========
+  const cases = [
+    {
+      id: "2025-001",
+      system: "Cardiovascular",
+      title: "Caso 1: Dor torácica aguda",
+      history: "Homem, 65 anos, admitido com dor precordial intensa há 6 horas. Evoluiu para óbito por arritmia ventricular refratária. Foi realizada necrópsia.",
+      objectives: [
+        "Reconhecer morfologia de necrose de coagulação no miocárdio",
+        "Relacionar isquemia grave à necrose de coagulação",
+        "Aplicar veracidade em documentos médicos"
+      ],
+      macro: "Área pálida e firme no ventrículo esquerdo.",
+      microTemplate: "Cortes histológicos de miocárdio exibindo cardiomiócitos com {{gap1}} e {{gap2}}. Nota-se {{gap3}} com {{gap4}}. Presença de infiltrado inflamatório neutrofílico intersticial incipiente.",
+      gaps: {
+        gap1: "Hipereosinofilia citoplasmática",
+        gap2: "perda de estriações",
+        gap3: "ausência de núcleos (cariólise)",
+        gap4: "manutenção do contorno celular ('células fantasmas')"
+      },
+      expert: "No infarto agudo entre 6–24 horas, a necrose de coagulação já se instalou: citoplasma hipereosinofílico, cariólise e preservação do contorno celular. O infiltrado neutrofílico ainda é discreto, o que ajuda a estimar o tempo do evento.",
+      features: [
+        { id: 'f1', text: "Hipereosinofilia citoplasmática", correct: true, fills: ['gap1'] },
+        { id: 'f2', text: "Manutenção do contorno celular ('células fantasmas')", correct: true, fills: ['gap4'] },
+        { id: 'f3', text: "Fragmentação nuclear em corpos apoptóticos", correct: false, fills: [] },
+        { id: 'f4', text: "Ausência de núcleos (cariólise)", correct: true, fills: ['gap3'] },
+        { id: 'f5', text: "Perda de estriações", correct: true, fills: ['gap2'] }
+      ],
+      fbFeatures: "✓ Perfeito! O laudo descreve necrose de coagulação: citoplasma acidófilo, perda do núcleo e preservação temporária do contorno celular.",
+      diagnoses: [
+        {
+          id: 'd1',
+          text: "Necrose de coagulação: isquemia intensa com desnaturação proteica e preservação da arquitetura.",
+          correct: true
+        },
+        {
+          id: 'd2',
+          text: "Apoptose: morte celular programada sem inflamação significativa, típica de injúrias leves.",
+          correct: false
+        }
+      ],
+      fbDiag: "✓ Correto! A isquemia grave do infarto leva à depleção de ATP e desnaturação de proteínas, impedindo a proteólise imediata e preservando a arquitetura por algum tempo.",
+      ethicsQ: "A família questiona se o estresse no trabalho causou o infarto e quer processar a empresa. Como o médico deve agir?",
+      ethicsOpts: [
+        {
+          id: 'e1',
+          text: "Atestar 'morte por estresse laboral' no documento oficial para ajudar a família.",
+          type: 'agg',
+          principles: ['veracidade', 'justiça']
+        },
+        {
+          id: 'e2',
+          text: "Preencher a declaração com a causa mortis técnica (infarto agudo) e explicar que os fatores de risco são multifatoriais.",
+          type: 'bal',
+          principles: ['veracidade', 'não maleficência', 'responsabilidade profissional']
+        },
+        {
+          id: 'e3',
+          text: "Recusar-se a falar com a família, pois isso seria responsabilidade exclusiva do médico legista.",
+          type: 'agg',
+          principles: ['beneficência']
+        }
+      ],
+      fbEthics: {
+        e1: "❌ Incorreto e antiético. O médico deve atestar a causa biológica conhecida, sem inferir nexo trabalhista sem perícia específica.",
+        e2: "✓ Conduta adequada! Mantém veracidade documental e acolhe a família com explicações claras, sem extrapolar o papel pericial.",
+        e3: "❌ Inadequado. A comunicação com familiares faz parte da boa prática, mesmo em casos de necrópsia."
+      }
+    },
+    {
+      id: "2025-045",
+      system: "Respiratório",
+      title: "Caso 2: Lesão pulmonar cavitária",
+      history: "Paciente com tosse produtiva, febre vespertina e perda ponderal. Biópsia de lesão pulmonar cavitária.",
+      objectives: [
+        "Reconhecer necrose caseosa e granuloma",
+        "Diferenciar necrose caseosa de liquefação",
+        "Deliberar frente a risco coletivo de transmissão"
+      ],
+      macro: "Material brancacento, friável, com aspecto de queijo ('caseum') na cavidade pulmonar.",
+      microTemplate: "Parênquima pulmonar substituído por área central de {{gap1}}, com {{gap2}}. Na periferia, observa-se {{gap3}} com {{gap4}}.",
+      gaps: {
+        gap1: "necrose granular amorfa",
+        gap2: "perda total da arquitetura tecidual",
+        gap3: "reação granulomatosa",
+        gap4: "células epitelioides e células gigantes tipo Langhans"
+      },
+      expert: "Na tuberculose, a necrose caseosa destrói completamente a arquitetura tecidual, formando material granular amorfo. O granuloma periférico com células gigantes tipo Langhans reflete resposta imune celular crônica.",
+      features: [
+        { id: 'f1', text: "Necrose granular amorfa ('caseum')", correct: true, fills: ['gap1'] },
+        { id: 'f2', text: "Preservação da arquitetura tecidual", correct: false, fills: [] },
+        { id: 'f3', text: "Células gigantes de Langhans na periferia", correct: true, fills: ['gap4'] },
+        { id: 'f4', text: "Perda total da arquitetura celular", correct: true, fills: ['gap2'] },
+        { id: 'f5', text: "Reação granulomatosa", correct: true, fills: ['gap3'] }
+      ],
+      fbFeatures: "✓ Excelente! Na necrose caseosa, a arquitetura é destruída, restando apenas material granular amorfo, cercado por reação granulomatosa.",
+      diagnoses: [
+        {
+          id: 'd1',
+          text: "Necrose caseosa: combinação de coagulação e liquefação mediada por resposta granulomatosa crônica.",
+          correct: true
+        },
+        {
+          id: 'd2',
+          text: "Necrose de liquefação: digestão enzimática rápida formando coleção purulenta líquida.",
+          correct: false
+        }
+      ],
+      fbDiag: "✓ Correto! O aspecto 'caseoso' decorre da ação incompleta dos macrófagos sobre os componentes da micobactéria, em contexto de inflamação crônica granulomatosa.",
+      ethicsQ: "O paciente é diagnosticado com tuberculose ativa bacilífera, mas recusa tratamento e vive em um abrigo lotado. O risco de contágio é alto.",
+      ethicsOpts: [
+        {
+          id: 'e1',
+          text: "Respeitar a autonomia absoluta e dar alta, pois ninguém pode ser forçado a se tratar.",
+          type: 'agg',
+          principles: ['autonomia']
+        },
+        {
+          id: 'e2',
+          text: "Notificar a vigilância epidemiológica para busca ativa e instituir Tratamento Diretamente Observado (TDO), considerando medidas legais se houver recusa persistente.",
+          type: 'bal',
+          principles: ['não maleficência', 'beneficência', 'justiça', 'saúde pública']
+        },
+        {
+          id: 'e3',
+          text: "Manter o paciente trancado no hospital contra a vontade dele, sem ordem judicial.",
+          type: 'agg',
+          principles: ['não maleficência']
+        }
+      ],
+      fbEthics: {
+        e1: "❌ Incorreto. A autonomia não pode se sobrepor ao risco iminente de dano a terceiros em doenças transmissíveis.",
+        e2: "✓ Conduta adequada! Equilibra direitos individuais e proteção coletiva, utilizando estratégias graduais e, se necessário, medidas legais.",
+        e3: "❌ Ilegal e antiético. Internação compulsória exige respaldo legal específico, não podendo ser feita de forma arbitrária."
+      }
+    },
+    {
+      id: "2025-089",
+      system: "Hepatobiliar",
+      title: "Caso 3: Disfunção hepática aguda",
+      history: "Biópsia hepática em paciente com hepatite viral aguda grave, icterícia intensa e elevação acentuada de enzimas hepáticas.",
+      objectives: [
+        "Reconhecer apoptose (corpos de Councilman) no fígado",
+        "Diferenciar apoptose de necrose com inflamação intensa",
+        "Aplicar critérios éticos em alocação de órgãos"
+      ],
+      macro: "Fígado levemente aumentado, sem áreas de necrose confluente visível à macroscopia.",
+      microTemplate: "Tecido hepático exibindo hepatócitos dispersos com {{gap1}} e citoplasma {{gap2}}. Observam-se {{gap3}} e {{gap4}}. Ausência de inflamação neutrofílica adjacente.",
+      gaps: {
+        gap1: "retração celular",
+        gap2: "denso e intensamente eosinofílico",
+        gap3: "núcleos fragmentados",
+        gap4: "corpos apoptóticos (corpos de Councilman)"
+      },
+      expert: "Na hepatite viral, linfócitos T citotóxicos induzem apoptose dos hepatócitos infectados, gerando corpos de Councilman. O padrão é de 'spotty necrosis', mas com mecanismo apoptótico e pouca inflamação neutrofílica.",
+      features: [
+        { id: 'f1', text: "Tumefação celular (inchaço)", correct: false, fills: [] },
+        { id: 'f2', text: "Retração celular e citoplasma denso", correct: true, fills: ['gap1', 'gap2'] },
+        { id: 'f3', text: "Formação de corpos apoptóticos (corpos de Councilman)", correct: true, fills: ['gap3', 'gap4'] },
+        { id: 'f4', text: "Inflamação purulenta difusa", correct: false, fills: [] }
+      ],
+      fbFeatures: "✓ Perfeito! Na apoptose, a célula encolhe, condensa o citoplasma e se fragmenta em corpos apoptóticos, com pouca resposta inflamatória neutrofílica.",
+      diagnoses: [
+        {
+          id: 'd1',
+          text: "Apoptose: morte celular programada induzida por linfócitos T contra hepatócitos infectados.",
+          correct: true
+        },
+        {
+          id: 'd2',
+          text: "Necrose gordurosa: saponificação dos hepatócitos por ação de lipases.",
+          correct: false
+        }
+      ],
+      fbDiag: "✓ Correto! Na hepatite viral aguda, a resposta imune celular ativa vias apoptóticas nos hepatócitos, limitando a replicação viral e explicando os corpos de Councilman.",
+      ethicsQ: "O paciente necessita de transplante hepático urgente. O histórico mostra dependência química ativa. Há apenas um órgão disponível e outro candidato na fila.",
+      ethicsOpts: [
+        {
+          id: 'e1',
+          text: "Excluir automaticamente o paciente dependente químico da lista, pois ele seria 'culpado' pela própria doença.",
+          type: 'agg',
+          principles: ['justiça']
+        },
+        {
+          id: 'e2',
+          text: "Utilizar critérios técnicos objetivos (gravidade/MELD) e avaliação psicossocial de suporte pós-transplante, sem discriminação moral.",
+          type: 'bal',
+          principles: ['justiça', 'beneficência', 'não maleficência']
+        },
+        {
+          id: 'e3',
+          text: "Dar preferência ao paciente dependente químico para compensar injustiças sociais.",
+          type: 'agg',
+          principles: ['justiça']
+        }
+      ],
+      fbEthics: {
+        e1: "❌ Inaceitável. A alocação de órgãos não deve punir comportamentos, mas seguir critérios prognósticos e de justiça distributiva.",
+        e2: "✓ Conduta adequada! Os critérios devem ser transparentes, baseados em gravidade e viabilidade de cuidado do enxerto, sem julgamento moral.",
+        e3: "❌ Problemático. A reparação de injustiças sociais é importante, mas a decisão sobre órgão escasso precisa seguir critérios técnicos claros."
+      }
+    }
+  ];
+
+  // ========== ESTADO GLOBAL ==========
+  let currentCaseIdx = 0;
+  let selectedFeatures = [];
+  let selectedDiag = null;
+  let selectedEthic = null;
+
+  // ========== FUNÇÕES AUXILIARES ==========
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function updateProgressDots(part) {
+    const dotMap = { features: 'dot-laudo', diag: 'dot-cp', ethics: 'dot-bio' };
+    $(dotMap[part]).classList.add('done');
+  }
+
+  function resetProgressDots() {
+    ['dot-laudo', 'dot-cp', 'dot-bio'].forEach(id => $(id).classList.remove('done'));
+  }
+
+  function renderMicroWithGaps(caseData, fill = false, selectedCorrectFeatures = []) {
+    const template = caseData.microTemplate;
+    const allGaps = caseData.gaps;
+    const filled = { ...allGaps };
+
+    if (fill) {
+      Object.keys(filled).forEach(key => (filled[key] = "____"));
+      selectedCorrectFeatures.forEach(fid => {
+        const feat = caseData.features.find(f => f.id === fid);
+        if (feat?.correct && feat.fills) {
+          feat.fills.forEach(g => {
+            if (filled[g] === "____" && caseData.gaps[g]) {
+              filled[g] = caseData.gaps[g];
+            }
+          });
+        }
+      });
+    } else {
+      Object.keys(filled).forEach(key => (filled[key] = "____"));
+    }
+
+    let text = template;
+    Object.keys(filled).forEach(key => {
+      const value = filled[key];
+      const placeholder = `{{${key}}}`;
+      text = text.replace(placeholder, `<span class="report-gap">${value}</span>`);
+    });
+
+    return text;
+  }
+
+  // ========== RENDERIZAR TABS ==========
+  function renderTabs() {
+    const tabsNav = $('tabs-nav');
+    tabsNav.innerHTML = cases.map((c, i) => `
+      <button 
+        class="tab-btn ${i === 0 ? 'active' : ''}" 
+        type="button" 
+        data-index="${i}"
+      >
+        Caso ${i + 1}: ${c.system}
+      </button>
+    `).join('');
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.dataset.index);
+        loadCase(idx);
+      });
+    });
+  }
+
+  // ========== CARREGAR CASO ==========
+  function loadCase(index) {
+    currentCaseIdx = index;
+    const c = cases[index];
+
+    // Atualizar tabs
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === index);
+    });
+
+    // Reset estado
+    selectedFeatures = [];
+    selectedDiag = null;
+    selectedEthic = null;
+    resetProgressDots();
+
+    // Limpar feedback
+    ['fb-features', 'fb-diag', 'fb-ethics'].forEach(id => {
+      const fb = $(id);
+      fb.style.display = 'none';
+      fb.className = 'feedback-box';
+      fb.innerHTML = '';
+    });
+
+    // Preencher header
+    $('case-title').textContent = c.title;
+    $('case-history').textContent = c.history;
+    $('case-objective').innerHTML = `<strong>Objetivos:</strong> ${c.objectives.join(' • ')}`;
+    $('report-id-badge').textContent = `Laudo ${c.id}`;
+    $('case-system').textContent = `Sistema: ${c.system}`;
+
+    // Preencher laudo
+    $('report-id').textContent = c.id;
+    $('macro-desc').textContent = c.macro;
+    $('micro-desc').innerHTML = renderMicroWithGaps(c, false);
+    $('expert-text').textContent = c.expert;
+
+    // Preencher features
+    const fList = $('feature-list');
+    fList.innerHTML = c.features.map(f => `
+      <button type="button" class="feature-item" data-id="${f.id}" aria-pressed="false">
+        <span class="feature-checkbox"></span>
+        <span>${f.text}</span>
+      </button>
+    `).join('');
+
+    document.querySelectorAll('.feature-item').forEach(btn => {
+      btn.addEventListener('click', () => toggleFeature(btn));
+    });
+
+    // Preencher diagnósticos
+    const dList = $('diag-options');
+    dList.innerHTML = c.diagnoses.map(d => `
+      <div class="choice-option" data-id="${d.id}">
+        <strong>Opção:</strong> ${d.text}
+      </div>
+    `).join('');
+
+    document.querySelectorAll('#diag-options .choice-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        document.querySelectorAll('#diag-options .choice-option').forEach(el => {
+          el.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        selectedDiag = this.getAttribute('data-id');
+        console.log('Diagnóstico selecionado:', selectedDiag);
+      });
+    });
+
+    // Preencher bioética
+    $('ethics-q').textContent = c.ethicsQ;
+    const eList = $('ethics-options');
+    eList.innerHTML = c.ethicsOpts.map(e => `
+      <div class="choice-option" data-id="${e.id}">
+        <strong>Opção:</strong> ${e.text}
+      </div>
+    `).join('');
+
+    document.querySelectorAll('#ethics-options .choice-option').forEach(opt => {
+      opt.addEventListener('click', function() {
+        document.querySelectorAll('#ethics-options .choice-option').forEach(el => {
+          el.classList.remove('selected');
+        });
+        this.classList.add('selected');
+        selectedEthic = this.getAttribute('data-id');
+        console.log('Ética selecionada:', selectedEthic);
+      });
+    });
+  }
+
+  // ========== TOGGLE FEATURE ==========
+  function toggleFeature(btn) {
+    const id = btn.getAttribute('data-id');
+    const isSelected = btn.classList.toggle('selected');
+    btn.setAttribute('aria-pressed', isSelected);
+
+    if (isSelected) {
+      if (!selectedFeatures.includes(id)) selectedFeatures.push(id);
+    } else {
+      selectedFeatures = selectedFeatures.filter(i => i !== id);
+    }
+    console.log('Features selecionadas:', selectedFeatures);
+  }
+
+  // ========== VERIFICAÇÕES ==========
+  function verifyFeatures() {
+    console.log('Verificando features...');
+    const c = cases[currentCaseIdx];
+    const correctIds = c.features.filter(f => f.correct).map(f => f.id);
+    const fb = $('fb-features');
+
+    const missing = correctIds.filter(id => !selectedFeatures.includes(id));
+    const extra = selectedFeatures.filter(id => !correctIds.includes(id));
+    const isPerfect = missing.length === 0 && extra.length === 0;
+
+    fb.style.display = 'block';
+    fb.className = 'feedback-box ' + (isPerfect ? 'success' : 'error');
+
+    if (isPerfect) {
+      fb.innerHTML = `<strong>🎉 Correto!</strong> ${c.fbFeatures}`;
+      $('micro-desc').innerHTML = renderMicroWithGaps(c, true, selectedFeatures);
+      updateProgressDots('features');
+    } else {
+      let html = "<strong>⚠️ Atenção</strong> Revise o laudo e as lacunas.<ul class='feedback-list'>";
+      if (missing.length > 0) {
+        const texts = c.features.filter(f => missing.includes(f.id)).map(f => f.text);
+        html += `<li>❌ Faltam: ${texts.join('; ')}.</li>`;
+      }
+      if (extra.length > 0) {
+        const texts = c.features.filter(f => extra.includes(f.id)).map(f => f.text);
+        html += `<li>⚠️ Marcados incorretamente: ${texts.join('; ')}.</li>`;
+      }
+      html += "</ul>";
+      fb.innerHTML = html;
+
+      const correctSelected = selectedFeatures.filter(id => correctIds.includes(id));
+      $('micro-desc').innerHTML = renderMicroWithGaps(c, true, correctSelected);
+    }
+  }
+
+  function verifyDiagnosis() {
+    console.log('Verificando diagnóstico...', selectedDiag);
+    if (!selectedDiag) {
+      alert('Por favor, selecione uma opção antes de conferir.');
+      return;
+    }
+    
+    const c = cases[currentCaseIdx];
+    const choice = c.diagnoses.find(d => d.id === selectedDiag);
+    
+    if (!choice) {
+      console.error('Diagnóstico não encontrado:', selectedDiag);
+      return;
+    }
+    
+    const fb = $('fb-diag');
+    fb.style.display = 'block';
+    fb.className = 'feedback-box ' + (choice.correct ? 'success' : 'error');
+
+    if (choice.correct) {
+      fb.innerHTML = `<strong>🎉 Correto!</strong> ${c.fbDiag}`;
+      updateProgressDots('diag');
+    } else {
+      fb.innerHTML = "<strong>❌ Incorreto</strong> Reflita sobre o padrão morfológico observado e revise as características descritas no laudo.";
+    }
+  }
+
+  function verifyEthics() {
+    console.log('Verificando ética...', selectedEthic);
+    if (!selectedEthic) {
+      alert('Por favor, selecione uma opção antes de conferir.');
+      return;
+    }
+    
+    const c = cases[currentCaseIdx];
+    const choice = c.ethicsOpts.find(e => e.id === selectedEthic);
+    
+    if (!choice) {
+      console.error('Opção ética não encontrada:', selectedEthic);
+      return;
+    }
+    
+    const fb = $('fb-ethics');
+    fb.style.display = 'block';
+    const isBalanced = choice.type === 'bal';
+    fb.className = 'feedback-box ' + (isBalanced ? 'success' : 'error');
+
+    const principlesText = choice.principles?.length 
+      ? ` <br><br><em>Princípios envolvidos: ${choice.principles.join(', ')}</em>` 
+      : '';
+
+    fb.innerHTML = `<strong>${isBalanced ? '✓' : '❌'} Análise:</strong> ${c.fbEthics[selectedEthic]}${principlesText}`;
+
+    if (isBalanced) updateProgressDots('ethics');
+  }
+
+  // ========== EVENT LISTENERS ==========
+  $('btn-check-features').addEventListener('click', verifyFeatures);
+  $('btn-check-diag').addEventListener('click', verifyDiagnosis);
+  $('btn-check-ethics').addEventListener('click', verifyEthics);
+
+  // ========== INICIALIZAR ==========
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inicializando aplicação...');
+    renderTabs();
+    loadCase(0);
+  });
+
+  // Fallback caso DOMContentLoaded já tenha disparado
+  if (document.readyState === 'loading') {
+    // Ainda carregando, aguardar DOMContentLoaded
+  } else {
+    // DOM já está pronto
+    console.log('Inicializando aplicação...');
+    renderTabs();
+    loadCase(0);
+  }
+</script>
+
+</body>
+</html>
