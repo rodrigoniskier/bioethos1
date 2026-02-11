@@ -47,4 +47,4 @@ O projeto utiliza casos clínicos reais estruturados em três etapas progressiva
 
 1. **Baixe o arquivo HTML**:
    ```bash
-   wget https://raw.githubusercontent.com/seu-usuario/bioethos/main/bioethos.html
+   wget  https://rodrigoniskier.github.io/bioethos1/
